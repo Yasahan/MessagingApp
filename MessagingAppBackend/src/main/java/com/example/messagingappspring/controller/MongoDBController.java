@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController()
 @RequestMapping("mongo")
@@ -39,6 +41,7 @@ public class MongoDBController {
     @GetMapping("/getUsers")
     public List<UserInfoDTO> getDataFromDB() {
         List<UserInfoDTO> users = new ArrayList<>();
+        
         FindIterable<Document> iterDoc = userCollection.find();
         for (Document document : iterDoc) {
             int user_id = Math.toIntExact(document.getLong("user_id"));

@@ -1,4 +1,10 @@
 .btn.btn-primary{
   background-color: cadetblue;
   width: 300px;
+  text-align: center;
 }
+
+.d-flex.justify-content-center{
+  text-align: center;
+}
+

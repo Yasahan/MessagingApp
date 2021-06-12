@@ -1,0 +1,8 @@
+.d-flex.justify-content-center{
+  text-align: center;
+}
+
+form {
+  margin: 0 auto;
+  width:300px;
+}
