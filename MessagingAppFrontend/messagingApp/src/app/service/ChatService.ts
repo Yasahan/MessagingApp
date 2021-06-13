@@ -33,8 +33,10 @@ export class ChatService {
 
   // MongoDB Endpoints
   addChatMongoUrl: string = 'http://localhost:8080/mongo/addNewChat';
+  getMessagesMongoUrl: string = 'http://localhost:8080/mongo/getMessages';
   addMemberToChatMongoUrl: string = 'http://localhost:8080/mongo/addMemberToChat';
   getMemberIdsOfGivenChatMongoUrl: string = 'http://localhost:8080/mongo/getMemberIdsOfGivenChat';
+  getChatUsingNameAndCreatorIdMongoUrl: string = 'http://localhost:8080/mongo/getChatUsingNameAndCreatorId';
 
 
   constructor(private http: HttpClient) {
@@ -54,7 +56,11 @@ export class ChatService {
   }
 
   async getMessages(chatId: string | null): Promise<MessageDTO[]> {
-    return await this.http.get<MessageDTO[]>(this.getMessagesUrl + "?chatId=" + chatId).toPromise();
+    if (DBSwitchService.isMongoDB) {
+      return await this.http.get<MessageDTO[]>(this.getMessagesMongoUrl + "?chatId=" + chatId).toPromise();
+    } else {
+      return await this.http.get<MessageDTO[]>(this.getMessagesUrl + "?chatId=" + chatId).toPromise();
+    }
   }
 
   async addNewChat(chat: ChatDTO): Promise<ChatDTO> {
@@ -78,7 +84,11 @@ export class ChatService {
   }
 
   async getChatUsingNameAndCreatorId(chat: ChatDTO) {
-    return await this.http.post<ChatDTO>(this.getChatUsingNameAndCreatorIdUrl + "?chatName=" + chat.chatName + "&creatorId=" + chat.creatorId, httpOptions).toPromise();
+    if (DBSwitchService.isMongoDB) {
+      return await this.http.post<ChatDTO>(this.getChatUsingNameAndCreatorIdMongoUrl + "?chatName=" + chat.chatName + "&creatorId=" + chat.creatorId, httpOptions).toPromise();
+    } else {
+      return await this.http.post<ChatDTO>(this.getChatUsingNameAndCreatorIdUrl + "?chatName=" + chat.chatName + "&creatorId=" + chat.creatorId, httpOptions).toPromise();
+    }
   }
 
   async checkIfMember(chat: ChatDTO, memberId: string): Promise<boolean> {
