@@ -1,11 +1,14 @@
 package com.example.messagingappspring.controller;
 
 import com.example.messagingappspring.DTO.*;
+import com.mongodb.BasicDBList;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,6 +26,11 @@ public class MongoDBController {
     @CrossOrigin
     @RequestMapping("/addUser")
     public UserInfoDTO addUser(@RequestBody UserInfoDTO user) {
+        Document foundUser = findUser("user_name", user.getUserName());
+        if (foundUser != null) {
+            new UserInfoDTO(Math.toIntExact(foundUser.getLong("user_id")), user.getUserName(),
+                    user.getUserPassword());
+        }
         Document doc =
                 new Document("user_id", userCollection.countDocuments() + 1)
                         .append("user_name", user.getUserName())
@@ -57,6 +65,16 @@ public class MongoDBController {
     }
 
     @CrossOrigin
+    @RequestMapping("/getAdminForLogin")
+    public UserInfoDTO getAdminForLogin(@RequestBody UserInfoDTO user) {
+        Document foundUser = findUser("user_id", String.valueOf(user.getUserId()));
+        if (foundUser.get("is_admin") != null) {
+            return user;
+        }
+        return null;
+    }
+
+    @CrossOrigin
     @RequestMapping("/checkUserName")
     public boolean isUserAlreadyExist(@RequestBody String userName) {
         FindIterable<Document> iterDoc = userCollection.find();
@@ -71,7 +89,7 @@ public class MongoDBController {
     @CrossOrigin
     @RequestMapping("/addMemberToChat")
     public void addMemberToChat(@RequestParam String chatId, @RequestParam String memberId) {
-        Document userById = findUser("user_id",memberId);
+        Document userById = findUser("user_id", memberId);
         userCollection.updateOne(userById, Updates.set("chat_id", chatId));
     }
 
@@ -89,10 +107,24 @@ public class MongoDBController {
         chatCollection.insertOne(doc);
         chatCollection.updateOne(doc, Updates.push("users", chat.getCreatorId()));
 
-        Document userById = findUser("user_id",chat.getCreatorId());
-        userCollection.updateOne(userById, Updates.push("chat_id", chatId));
+        Document userById = findUser("user_id", chat.getCreatorId());
+        userCollection.updateOne(userById, Updates.push("chats", chatId));
 
         return new ChatDTO(Integer.toString((int) (chatCollection.countDocuments() + 1)), chat.getChatDescription(), chat.getChatName(), chat.getCreatorId());
+    }
+
+    @CrossOrigin
+    @RequestMapping("/getChatsForUserId")
+    public List<ChatDTO> getChatsForUserId(@RequestParam String userId) {
+        List<ChatDTO> chats = new ArrayList<>();
+
+        Document foundUser = findUser("user_id", userId);
+        List<Object> foundChats = (List<Object>) foundUser.get("chats");
+        for (Object obj : foundChats) {
+            Document chat = findChat("chat_id", String.valueOf(obj));
+            chats.add(new ChatDTO(chat.getLong("chat_id").toString(), chat.getString("chat_description"), chat.getString("chat_name"), chat.getString("creator_id")));
+        }
+        return chats;
     }
 
     @CrossOrigin
@@ -110,21 +142,22 @@ public class MongoDBController {
     @RequestMapping("/getMessages")
     public List<MessageDTO> getMessages(@RequestParam String chatId) {
         List<MessageDTO> messages = new ArrayList<>();
-        Document document = findChat("chat_id", chatId);
-        List<Object> foundMessages = (List<Object>) document.get("users");
-        for (Object obj : foundMessages) {
-            messages.add(new MessageDTO(document.getString("chat_id"), document.getString("content"), document.getString("sender_id")));
-        }
+        Document foundChat = findChat("chat_id", chatId);
+        // TODO how to get a nested document from a document??
+        List<MessageDTO> foundMessages = foundChat.getList("messages", MessageDTO.class);
+/*        for (ChatDTO obj : foundMessages) {
+            messages.add(new MessageDTO(obj.getLong("chat_id").toString(), foundChat.getString("content"), foundChat.getString("sender_id")));
+        }*/
         return messages;
     }
 
     @CrossOrigin
     @RequestMapping("/getChatUsingNameAndCreatorId")
     ChatDTO getChatUsingNameAndCreatorId(@RequestParam String chatName, @RequestParam String creatorId) {
-        FindIterable<Document> iterDoc = userCollection.find();
+        FindIterable<Document> iterDoc = chatCollection.find();
         for (Document document : iterDoc) {
-            if (document.getString("chat_name").equals(chatName) && document.getString("creator_id").equals(creatorId)) {
-                return new ChatDTO(document.getString("chat_id"), document.getString("chat_description"), document.getString("chat_name"), document.getString("creator_id"));
+            if (document.getString("creator_id").equals(creatorId)) {
+                return new ChatDTO(document.getLong("chat_id").toString(), document.getString("chat_description"), document.getString("chat_name"), document.getString("creator_id"));
             }
         }
         return null;
@@ -139,11 +172,12 @@ public class MongoDBController {
     @CrossOrigin
     @RequestMapping("/addAdmin")
     public void addAdmin(@RequestBody AdminInfoDTO admin) {
+        Document foundUser = findUser("user_id", String.valueOf(admin.getUserId()));
         Document doc =
                 new Document("is_admin", admin.getUserId())
                         .append("birthdate", admin.getUserBirthdate())
                         .append("email", admin.getUserEmail());
-        userCollection.insertOne(doc);
+        userCollection.updateOne(foundUser, Updates.set("is_admin", doc));
     }
 
 
@@ -184,6 +218,9 @@ public class MongoDBController {
     public Document findUser(String key, String value) {
         FindIterable<Document> iterDoc = userCollection.find();
         for (Document document : iterDoc) {
+            if (document.getLong(key) == null) {
+                return null;
+            }
             if (document.getLong(key).toString().equals(value)) {
                 return document;
             }
@@ -194,7 +231,7 @@ public class MongoDBController {
     public Document loginValidation(String userName, String userPassword) {
         FindIterable<Document> iterDoc = userCollection.find();
         for (Document document : iterDoc) {
-            if (document.getString("user_name").equals(userName) && document.getString("user_password").equals(userPassword)) {
+            if (document.getString("user_name") != null && document.getString("user_name").equals(userName) && document.getString("user_password").equals(userPassword)) {
                 return document;
             }
         }
