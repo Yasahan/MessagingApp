@@ -28,6 +28,7 @@ export class UserService {
 
   // MongoDB Endpoints
   addUserMongoUrl: string = 'http://localhost:8080/mongo/addUser';
+  getUserMongoUrl: string = 'http://localhost:8080/mongo/getUser';
 
 
   constructor(private http: HttpClient) {
@@ -39,20 +40,20 @@ export class UserService {
   }
 
   async getUser(user: User): Promise<User> {
-    return await this.http.post<User>(this.getUserUrl, user, httpOptions).toPromise();
+    if (DBSwitchService.isMongoDB) {
+      return await this.http.post<User>(this.getUserMongoUrl, user, httpOptions).toPromise();
+    } else {
+      return await this.http.post<User>(this.getUserUrl, user, httpOptions).toPromise();
+    }
+
   }
 
   addUser(user: User): Observable<User> {
-<<<<<<< HEAD
-    // return this.http.post<User>(this.addUserMongoUrl, user, httpOptions);
-    return this.http.post<User>(this.addUserUrl, user, httpOptions);
-=======
-    if(DBSwitchService.isMongoDB){
+    if (DBSwitchService.isMongoDB) {
       return this.http.post<User>(this.addUserMongoUrl, user, httpOptions);
     } else {
       return this.http.post<User>(this.addUserUrl, user, httpOptions);
     }
->>>>>>> 0adffd0d197888ba4ad0a54f3e8b2060116712db
   }
 
   removeAllUser() {
@@ -63,8 +64,8 @@ export class UserService {
     return this.http.post<User>(this.removeUserUrl, user, httpOptions);
   }
 
-  async getViaName(userName:string): Promise<User> {
-    return await this.http.post<User>(this.getViaNameUrl,userName, httpOptions).toPromise();
+  async getViaName(userName: string): Promise<User> {
+    return await this.http.post<User>(this.getViaNameUrl, userName, httpOptions).toPromise();
   }
 
 }
