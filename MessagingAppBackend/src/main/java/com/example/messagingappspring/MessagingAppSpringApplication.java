@@ -9,6 +9,5 @@ public class MessagingAppSpringApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MessagingAppSpringApplication.class, args);
-        DBPopulate.populate();
     }
 }

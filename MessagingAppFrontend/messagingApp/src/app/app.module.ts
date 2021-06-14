@@ -21,6 +21,7 @@ import { InviteFriendsComponent } from './component/invite-friends/invite-friend
 import { FirstReportComponent } from './component/first-report/first-report.component';
 import { HeaderComponent } from './component/header/header.component';
 import { SecondReportComponent } from './component/second-report/second-report.component';
+import { PopulateDbComponent } from './component/populate-db/populate-db.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { SecondReportComponent } from './component/second-report/second-report.c
     InviteFriendsComponent,
     FirstReportComponent,
     HeaderComponent,
-    SecondReportComponent
+    SecondReportComponent,
+    PopulateDbComponent
   ],
   imports: [
     BrowserModule,
@@ -58,7 +60,8 @@ import { SecondReportComponent } from './component/second-report/second-report.c
       {path: 'addFriend', component: AddFriendComponent},
       {path: 'inviteFriends/:chatId', component: InviteFriendsComponent},
       {path: 'firstReport', component: FirstReportComponent},
-      {path: 'secondReport', component: SecondReportComponent}
+      {path: 'secondReport', component: SecondReportComponent},
+      {path: 'populateDB', component: PopulateDbComponent}
     ])
   ],
   providers: [],
