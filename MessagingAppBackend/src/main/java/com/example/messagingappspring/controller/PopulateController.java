@@ -10,8 +10,7 @@ public class PopulateController {
 
     @CrossOrigin
     @GetMapping("/populateDB")
-    public String populateDB() {
+    public void populateDB() {
         DBPopulate.populate();
-        return "Success";
     }
 }
