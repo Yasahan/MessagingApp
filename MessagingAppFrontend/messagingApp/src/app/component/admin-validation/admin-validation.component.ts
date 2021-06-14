@@ -24,6 +24,7 @@ export class AdminValidationComponent implements OnInit {
   onSubmit(form: any) {
     let admin = new Admin();
     admin.userBirthdate = form.birthdate;
+    console.log(admin.userBirthdate);
     admin.userEmail = form.email;
     let user = SessionService.getCurrentUser();
     admin.userName = user.userName;
