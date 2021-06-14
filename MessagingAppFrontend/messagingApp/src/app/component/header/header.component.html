@@ -14,6 +14,9 @@
       <ul class="nav navbar-nav navbar-right">
         <li><a href="/populateDB">Click to populate</a></li>
         <li><a href="#">Migration</a></li>
+        <li>
+          <button (click)="changeDBType()" class="btn-primary">{{dbName}}</button>
+        </li>
       </ul>
     </div>
   </div>

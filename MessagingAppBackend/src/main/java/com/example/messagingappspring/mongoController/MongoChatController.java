@@ -24,18 +24,8 @@ public class MongoChatController {
     @RequestMapping("/addMemberToChat")
     public void addMemberToChat(@RequestParam String chatId, @RequestParam String memberId) {
         Document userById = MongoUtil.findUserById(memberId);
-        Document foundChat = findChat("chat_id", chatId);
-        List<Object> chats = (List<Object>) userById.get("chats");
-        if(chats != null){
-            for(Object chat : chats){
-                if(chatId.equals(chat.toString())){
-                    return;
-                }
-            }
-        }
         if (userById != null) {
             userCollection.updateOne(userById, Updates.push("chats", Integer.parseInt(chatId)));
-            chatCollection.updateOne(foundChat, Updates.push("users", Integer.parseInt(memberId)));
         }
     }
 
@@ -52,6 +42,10 @@ public class MongoChatController {
         chatCollection.insertOne(doc);
         chatCollection.updateOne(doc, Updates.push("users", Integer.parseInt(chat.getCreatorId())));
         Document userById = MongoUtil.findUserById(chat.getCreatorId());
+        if (userById != null) {
+            userCollection.updateOne(userById, Updates.push("chats", chatId));
+        }
+
         return new ChatDTO(Integer.toString((int) (chatCollection.countDocuments() + 1)), chat.getChatDescription(), chat.getChatName(), chat.getCreatorId());
     }
 
