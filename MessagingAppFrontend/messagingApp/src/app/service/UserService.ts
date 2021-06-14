@@ -29,6 +29,7 @@ export class UserService {
   // MongoDB Endpoints
   addUserMongoUrl: string = 'http://localhost:8080/mongo/addUser';
   getUserMongoUrl: string = 'http://localhost:8080/mongo/getUser';
+  getViaNameMongoUrl: string = 'http://localhost:8080/mongo/getViaName';
 
 
   constructor(private http: HttpClient) {
@@ -65,6 +66,9 @@ export class UserService {
   }
 
   async getViaName(userName: string): Promise<User> {
+    if(DBSwitchService.isMongoDB){
+      return await this.http.post<User>(this.getViaNameMongoUrl, userName, httpOptions).toPromise();
+    }
     return await this.http.post<User>(this.getViaNameUrl, userName, httpOptions).toPromise();
   }
 

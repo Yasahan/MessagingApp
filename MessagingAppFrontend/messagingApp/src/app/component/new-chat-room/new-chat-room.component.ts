@@ -69,6 +69,7 @@ export class NewChatRoomComponent implements OnInit {
     else {
       alert("Only admins can create chatrooms");
     }
+
     this.router.navigate(['chatMenu/']);
   }
 }

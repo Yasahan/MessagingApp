@@ -1,20 +1,14 @@
 package com.example.messagingappspring.controller;
 
 import com.example.messagingappspring.DTO.*;
-import com.mongodb.BasicDBList;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.Doc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @RestController()
 @RequestMapping("mongo")
@@ -25,6 +19,29 @@ public class MongoDBController {
     MongoCollection<Document> chatCollection = database.getCollection("chat");
     MongoCollection<Document> hobbiesCollection = database.getCollection("hobbies");
 
+
+    @CrossOrigin
+    @RequestMapping("/populateHobbies")
+    public void populateHobbies() {
+        HashMap<String, String> hobbies = new HashMap<>();
+        hobbies.put("Tennis", "Tennis is a racket sport that can be played individually against a single opponent (singles) or between two teams of two players each (doubles).");
+        hobbies.put("Football", "Just a football");
+        hobbies.put("Basketball", "Just a basketball");
+        hobbies.put("Golf", "Just a golf");
+
+        Iterator<Map.Entry<String, String>> it = hobbies.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, String> pair = it.next();
+            String hobbyName = pair.getKey();
+            String hobbyDescription = pair.getValue();
+            it.remove(); // avoids a ConcurrentModificationException
+            Document doc =
+                    new Document("hobby_id", hobbiesCollection.countDocuments() + 1)
+                            .append("hobby_name", hobbyName)
+                            .append("hobby_description", hobbyDescription);
+            hobbiesCollection.insertOne(doc);
+        }
+    }
 
     @CrossOrigin
     @RequestMapping("/addUser")
@@ -47,7 +64,7 @@ public class MongoDBController {
     @GetMapping("/getUsers")
     public List<UserInfoDTO> getUsers() {
         List<UserInfoDTO> users = new ArrayList<>();
-        
+
         FindIterable<Document> iterDoc = userCollection.find();
         for (Document document : iterDoc) {
             int user_id = Math.toIntExact(document.getLong("user_id"));
@@ -94,7 +111,9 @@ public class MongoDBController {
     @RequestMapping("/addMemberToChat")
     public void addMemberToChat(@RequestParam String chatId, @RequestParam String memberId) {
         Document userById = findUserById(memberId);
-        userCollection.updateOne(userById, Updates.push("chat_id", chatId));
+        if (userById != null) {
+            userCollection.updateOne(userById, Updates.push("chats", Integer.parseInt(chatId)));
+        }
     }
 
 
@@ -110,7 +129,6 @@ public class MongoDBController {
                         .append("chat_description", chat.getChatDescription());
         chatCollection.insertOne(doc);
         chatCollection.updateOne(doc, Updates.push("users", chat.getCreatorId()));
-
         Document userById = findUserById(chat.getCreatorId());
         if (userById != null) {
             userCollection.updateOne(userById, Updates.push("chats", chatId));
@@ -123,10 +141,9 @@ public class MongoDBController {
     @RequestMapping("/getChatsForUserId")
     public List<ChatDTO> getChatsForUserId(@RequestParam String userId) {
         List<ChatDTO> chats = new ArrayList<>();
-
         Document foundUser = findUserById(userId);
         List<Object> foundChats = (List<Object>) foundUser.get("chats");
-        if(foundChats == null){
+        if (foundChats == null) {
             return chats;
         }
         for (Object obj : foundChats) {
@@ -165,10 +182,12 @@ public class MongoDBController {
     public List<MessageDTO> getMessages(@RequestParam String chatId) {
         List<MessageDTO> messages = new ArrayList<>();
         Document foundChat = findChat("chat_id", chatId);
-        // TODO how to get a nested document from a document??
         List<Document> foundMessages = (List<Document>) foundChat.get("messages");
+        if (foundMessages == null) {
+            return messages;
+        }
         for (Document obj : foundMessages) {
-            messages.add(new MessageDTO(obj.getLong("chat_id").toString(), obj.getString("content"), obj.getString("sender_id")));
+            messages.add(new MessageDTO(obj.getInteger("chat_id").toString(), obj.getString("content"), obj.getString("sender_id")));
         }
         return messages;
     }
@@ -209,9 +228,32 @@ public class MongoDBController {
         List<HobbyDTO> hobbies = new ArrayList<>();
         FindIterable<Document> iterDoc = hobbiesCollection.find();
         for (Document document : iterDoc) {
-            hobbies.add(new HobbyDTO(document.getString("hobby_id"), document.getString("hobby_name"), document.getString("hobby_description")));
+            hobbies.add(new HobbyDTO(document.getLong("hobby_id").toString(), document.getString("hobby_name"), document.getString("hobby_description")));
         }
         return hobbies;
+    }
+
+    @CrossOrigin
+    @RequestMapping("/addChoice")
+    public void addChoice(@RequestParam String hobbyId, @RequestParam String userId) {
+        Document user = findUserById(userId);
+        if (!isHobbyAlreadyPresent(hobbyId, userId) && user != null) {
+            userCollection.updateOne(user, Updates.push("hobbies", hobbyId));
+        }
+    }
+
+    private boolean isHobbyAlreadyPresent(String hobbyId, String userId) {
+        Document user = findUserById(userId);
+        List<Object> hobbies = (List<Object>) user.get("hobbies");
+        if(hobbies == null){
+            return false;
+        }
+        for (Object obj : hobbies) {
+            if(obj.toString().equals(hobbyId)){
+                return true;
+            }
+        }
+        return false;
     }
 
     @CrossOrigin
@@ -226,6 +268,46 @@ public class MongoDBController {
         }
         return members;
     }
+
+    @CrossOrigin
+    @RequestMapping("/getViaName")
+    public UserInfoDTO getViaName(@RequestBody String userName) {
+        Document foundUser = findUser("user_name", userName);
+        if (foundUser != null) {
+            return new UserInfoDTO(Math.toIntExact(foundUser.getLong("user_id")), foundUser.getString("user_name"), foundUser.getString("user_password"));
+        }
+        return null;
+    }
+
+    @CrossOrigin
+    @RequestMapping("/addFriend")
+    public void addFriend(@RequestParam String userId, @RequestParam String friendId) {
+        Document user = findUserById(userId);
+        Document friend = findUserById(friendId);
+        if (user != null) {
+            userCollection.updateOne(user, Updates.push("friends", Integer.parseInt(friendId)));
+        }
+        if (friend != null) {
+            userCollection.updateOne(friend, Updates.push("friends", Integer.parseInt(userId)));
+        }
+    }
+
+    @CrossOrigin
+    @RequestMapping("/getFriends")
+    public List<UserInfoDTO> getFriends(@RequestParam String userId) {
+        List<UserInfoDTO> friends = new ArrayList<>();
+        Document user = findUserById(userId);
+        List<Object> foundFriends = (List<Object>) user.get("friends");
+        if (foundFriends == null) {
+            return friends;
+        }
+        for (Object obj : foundFriends) {
+            Document friend = findUserById(String.valueOf(obj));
+            friends.add(new UserInfoDTO(Math.toIntExact(friend.getLong("user_id")), friend.getString("user_name"), friend.getString("user_password")));
+        }
+        return friends;
+    }
+
 
     public Document findChat(String key, String value) {
         FindIterable<Document> iterDoc = chatCollection.find();

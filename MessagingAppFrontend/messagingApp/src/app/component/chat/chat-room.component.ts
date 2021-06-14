@@ -49,6 +49,7 @@ export class ChatRoomComponent implements OnInit {
       if(isMember) {
         this.chatService.addMessage(message).then(message => {
           this.refreshMessages();
+          messageBox.reset();
         });
       }
       else {

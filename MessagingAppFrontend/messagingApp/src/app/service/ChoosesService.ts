@@ -6,6 +6,7 @@ import {Hobby} from "../model/Hobby";
 import {Admin} from "../model/Admin";
 import {User} from "../model/User";
 import {SessionService} from "./SessionService";
+import {DBSwitchService} from "./DBSwitchService";
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -19,17 +20,22 @@ const httpOptions = {
 })
 export class ChoosesService {
 
+  //MySQL Endpoints
   addChoiceUrl: string = 'http://localhost:8080/addChoice';
+
+  //MongoDB Endpoints
+  addChoiceMongoUrl: string = 'http://localhost:8080/mongo/addChoice';
 
   constructor(private http: HttpClient) {
   }
 
 
   addChoice(hobby: Hobby): Observable<Hobby> {
-    // let data = {'hobbyId': hobby.hobbyId, 'userId': SessionService.getCurrentUser().userId};
-    // const data = new FormData();
-    // data.append('hobbyId', hobby.hobbyId);
-    // data.append('userId', SessionService.getCurrentUser().userId);
-    return this.http.post<Hobby>(this.addChoiceUrl + "?hobbyId="+ hobby.hobbyId + "&userId=" + SessionService.getCurrentUser().userId, httpOptions);
+    if (DBSwitchService.isMongoDB) {
+      return this.http.post<Hobby>(this.addChoiceMongoUrl + "?hobbyId=" + hobby.hobbyId + "&userId=" + SessionService.getCurrentUser().userId, httpOptions);
+    } else {
+      return this.http.post<Hobby>(this.addChoiceUrl + "?hobbyId=" + hobby.hobbyId + "&userId=" + SessionService.getCurrentUser().userId, httpOptions);
+    }
+
   }
 }

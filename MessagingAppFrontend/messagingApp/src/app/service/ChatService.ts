@@ -77,8 +77,10 @@ export class ChatService {
   async addMessage(message: MessageDTO): Promise<MessageDTO> {
     if(DBSwitchService.isMongoDB){
       return await this.http.post<MessageDTO>(this.addMessageMongoUrl, message, httpOptions).toPromise();
+    } else {
+      return await this.http.post<MessageDTO>(this.addMessageUrl, message, httpOptions).toPromise();
     }
-    return await this.http.post<MessageDTO>(this.addMessageUrl, message, httpOptions).toPromise();
+
   }
 
   async addMemberToChat(chatId: string | null, memberId: string | null) {
