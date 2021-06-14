@@ -19,7 +19,6 @@ public class MongoChatController {
     MongoDatabase database = mongoClient.getDatabase("messagingappdb");
     MongoCollection<Document> userCollection = database.getCollection("user_info");
     MongoCollection<Document> chatCollection = database.getCollection("chat");
-    MongoCollection<Document> hobbiesCollection = database.getCollection("hobbies");
 
     @CrossOrigin
     @RequestMapping("/addMemberToChat")
@@ -136,14 +135,11 @@ public class MongoChatController {
     ChatDTO getChatUsingNameAndCreatorId(@RequestParam String chatName, @RequestParam String creatorId) {
         FindIterable<Document> iterDoc = chatCollection.find();
         for (Document document : iterDoc) {
-            if (document.getString("creator_id").equals(creatorId)) {
-                return new ChatDTO(document.getLong("chat_id").toString(), document.getString("chat_description"), document.getString("chat_name"), document.getString("creator_id"));
+            if (document.getInteger("creator_id").toString().equals(creatorId)) {
+                return new ChatDTO(document.getLong("chat_id").toString(), document.getString("chat_description"), document.getString("chat_name"), document.getInteger("creator_id").toString());
             }
         }
         return null;
     }
-
-
-
 
 }
