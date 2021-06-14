@@ -39,6 +39,7 @@ export class ChatService {
   getMemberIdsOfGivenChatMongoUrl: string = 'http://localhost:8080/mongo/getMemberIdsOfGivenChat';
   getChatUsingNameAndCreatorIdMongoUrl: string = 'http://localhost:8080/mongo/getChatUsingNameAndCreatorId';
   getChatsForUserIdMongoUrl: string = 'http://localhost:8080/mongo/getChatsForUserId';
+  checkIfMemberMongoUrl: string = 'http://localhost:8080/mongo/checkIfMember';
 
 
 
@@ -100,6 +101,9 @@ export class ChatService {
   }
 
   async checkIfMember(chat: ChatDTO, memberId: string): Promise<boolean> {
+    if(DBSwitchService.isMongoDB){
+      return await this.http.post<boolean>(this.checkIfMemberMongoUrl + "?chatId=" + chat.chatId + "&memberId=" + memberId, httpOptions).toPromise();
+    }
     return await this.http.post<boolean>(this.checkIfMemberUrl + "?chatId=" + chat.chatId + "&memberId=" + memberId, httpOptions).toPromise();
   }
 

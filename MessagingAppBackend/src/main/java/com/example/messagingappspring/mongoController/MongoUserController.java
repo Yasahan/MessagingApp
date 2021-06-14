@@ -130,4 +130,34 @@ public class MongoUserController {
         return null;
     }
 
+    @CrossOrigin
+    @RequestMapping("/addFriend")
+    public void addFriend(@RequestParam String userId, @RequestParam String friendId) {
+        Document user = MongoUtil.findUserById(userId);
+        Document friend = MongoUtil.findUserById(friendId);
+        if(isAlreadyFriend(userId,friendId)){
+            return;
+        }
+        if (user != null) {
+            userCollection.updateOne(user, Updates.push("friends", Integer.parseInt(friendId)));
+        }
+        if (friend != null) {
+            userCollection.updateOne(friend, Updates.push("friends", Integer.parseInt(userId)));
+        }
+    }
+
+    boolean isAlreadyFriend(String userId, String friendId){
+        Document user = MongoUtil.findUserById(userId);
+        List<Object> friends = (List<Object>) user.get("friends");
+        if(friends == null){
+            return false;
+        }
+        for(Object friend : friends){
+            if(friend.toString().equals(friendId)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

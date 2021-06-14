@@ -37,11 +37,11 @@ public class MongoChatController {
         Document doc =
                 new Document("chat_id", chatId)
                         .append("chat_name", chat.getChatName())
-                        .append("creator_id", chat.getCreatorId())
+                        .append("creator_id", Integer.parseInt(chat.getCreatorId()))
                         .append("creation_date", new Date())
                         .append("chat_description", chat.getChatDescription());
         chatCollection.insertOne(doc);
-        chatCollection.updateOne(doc, Updates.push("users", chat.getCreatorId()));
+        chatCollection.updateOne(doc, Updates.push("users", Integer.parseInt(chat.getCreatorId())));
         Document userById = MongoUtil.findUserById(chat.getCreatorId());
         if (userById != null) {
             userCollection.updateOne(userById, Updates.push("chats", chatId));
@@ -61,9 +61,25 @@ public class MongoChatController {
         }
         for (Object obj : foundChats) {
             Document chat = findChat("chat_id", String.valueOf(obj));
-            chats.add(new ChatDTO(chat.getLong("chat_id").toString(), chat.getString("chat_description"), chat.getString("chat_name"), chat.getString("creator_id")));
+            chats.add(new ChatDTO(chat.getLong("chat_id").toString(), chat.getString("chat_description"), chat.getString("chat_name"), chat.getInteger("creator_id").toString()));
         }
         return chats;
+    }
+
+    @CrossOrigin
+    @RequestMapping("/checkIfMember")
+    public boolean checkIfMember(@RequestParam String chatId, @RequestParam String memberId) {
+        Document foundUser = MongoUtil.findUserById(memberId);
+        List<Object> foundChats = (List<Object>) foundUser.get("chats");
+        if (foundChats == null) {
+            return false;
+        }
+        for (Object obj : foundChats) {
+            if(obj.toString().equals(chatId)){
+                return true;
+            }
+        }
+        return false;
     }
 
     @CrossOrigin
@@ -127,18 +143,7 @@ public class MongoChatController {
         return null;
     }
 
-    @CrossOrigin
-    @RequestMapping("/addFriend")
-    public void addFriend(@RequestParam String userId, @RequestParam String friendId) {
-        Document user = MongoUtil.findUserById(userId);
-        Document friend = MongoUtil.findUserById(friendId);
-        if (user != null) {
-            userCollection.updateOne(user, Updates.push("friends", Integer.parseInt(friendId)));
-        }
-        if (friend != null) {
-            userCollection.updateOne(friend, Updates.push("friends", Integer.parseInt(userId)));
-        }
-    }
+
 
 
 }
