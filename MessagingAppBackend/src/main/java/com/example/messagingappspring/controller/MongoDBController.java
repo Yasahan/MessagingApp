@@ -91,6 +91,10 @@ public class MongoDBController {
                         .append("creation_date", new Date())
                         .append("chat_description", chat.getChatDescription());
         userCollection.insertOne(doc);
+
+        Document userById = findUserById(chat.getCreatorId());
+        userCollection.updateOne(userById, Updates.set("chat_id",chat.getCreatorId()));
+
         return new ChatDTO(Integer.toString((int)(chatCollection.countDocuments() + 1)), chat.getChatDescription(), chat.getChatName(), chat.getCreatorId());
     }
 

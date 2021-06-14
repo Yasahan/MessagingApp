@@ -3,6 +3,7 @@ import {Observable} from 'rxjs';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {User} from "../model/User";
 import {Admin} from "../model/Admin";
+import {DBSwitchService} from "./DBSwitchService";
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -16,12 +17,15 @@ const httpOptions = {
 })
 export class AdminService {
 
-  // getAdminsUrl: string = 'http://localhost:8080/getAdmins';
+  // MySQL Endpoints
   getAdminUrl: string = 'http://localhost:8080/getAdmin';
   addAdminUrl: string = 'http://localhost:8080/addAdmin';
   getAdminForLoginUrl: string = 'http://localhost:8080/getAdminForLogin';
-  // removeAllAdminUrl: string = 'http://localhost:8080/removeAllAdmin';
-  // removeAdminUrl: string = 'http://localhost:8080/removeAdmin';
+
+  // MongoDB Endpoints
+  addAdminMongoUrl: string = 'http://localhost:8080/mongo/addAdmin';
+  getAdminForLoginMongoUrl: string = 'http://localhost:8080/mongo/getAdminForLogin';
+
 
   constructor(private http: HttpClient) {
   }
@@ -31,10 +35,19 @@ export class AdminService {
   }
 
   addAdmin(admin: Admin): Observable<User> {
+    if(DBSwitchService.isMongoDB){
+      return this.http.post<Admin>(this.addAdminMongoUrl, admin, httpOptions);
+    }
     return this.http.post<Admin>(this.addAdminUrl, admin, httpOptions);
   }
 
   async getAdminForLogin(user: User) {
-    return await this.http.post<User>(this.getAdminForLoginUrl, user, httpOptions).toPromise();
+    if(DBSwitchService.isMongoDB){
+      return await this.http.post<User>(this.getAdminForLoginMongoUrl, user, httpOptions).toPromise();
+    } else {
+      return await this.http.post<User>(this.getAdminForLoginUrl, user, httpOptions).toPromise();
+    }
   }
+
+
 }

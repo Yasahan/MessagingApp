@@ -53,7 +53,7 @@ export class NewChatRoomComponent implements OnInit {
     chat.chatName = form.chatName;
     chat.chatDescription = form.chatDescription;
     chat.creatorId = SessionService.getCurrentUser().userId;
-    if(SessionService.isAdmin === true) {
+    if(SessionService.isAdmin) {
       this.chatService.addNewChat(chat).then(foundChat => {
 
       });
