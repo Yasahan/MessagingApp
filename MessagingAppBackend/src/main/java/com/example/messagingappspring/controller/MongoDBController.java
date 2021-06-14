@@ -7,6 +7,7 @@ import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.Doc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class MongoDBController {
     @CrossOrigin
     @RequestMapping("/getAdminForLogin")
     public UserInfoDTO getAdminForLogin(@RequestBody UserInfoDTO user) {
-        Document foundUser = findUser("user_id", String.valueOf(user.getUserId()));
+        Document foundUser = findUserById(String.valueOf(user.getUserId()));
         if (foundUser.get("is_admin") != null) {
             return user;
         }
@@ -92,8 +93,8 @@ public class MongoDBController {
     @CrossOrigin
     @RequestMapping("/addMemberToChat")
     public void addMemberToChat(@RequestParam String chatId, @RequestParam String memberId) {
-        Document userById = findUser("user_id", memberId);
-        userCollection.updateOne(userById, Updates.set("chat_id", chatId));
+        Document userById = findUserById(memberId);
+        userCollection.updateOne(userById, Updates.push("chat_id", chatId));
     }
 
 
@@ -110,8 +111,10 @@ public class MongoDBController {
         chatCollection.insertOne(doc);
         chatCollection.updateOne(doc, Updates.push("users", chat.getCreatorId()));
 
-        Document userById = findUser("user_id", chat.getCreatorId());
-        userCollection.updateOne(userById, Updates.push("chats", chatId));
+        Document userById = findUserById(chat.getCreatorId());
+        if (userById != null) {
+            userCollection.updateOne(userById, Updates.push("chats", chatId));
+        }
 
         return new ChatDTO(Integer.toString((int) (chatCollection.countDocuments() + 1)), chat.getChatDescription(), chat.getChatName(), chat.getCreatorId());
     }
@@ -121,8 +124,11 @@ public class MongoDBController {
     public List<ChatDTO> getChatsForUserId(@RequestParam String userId) {
         List<ChatDTO> chats = new ArrayList<>();
 
-        Document foundUser = findUser("user_id", userId);
+        Document foundUser = findUserById(userId);
         List<Object> foundChats = (List<Object>) foundUser.get("chats");
+        if(foundChats == null){
+            return chats;
+        }
         for (Object obj : foundChats) {
             Document chat = findChat("chat_id", String.valueOf(obj));
             chats.add(new ChatDTO(chat.getLong("chat_id").toString(), chat.getString("chat_description"), chat.getString("chat_name"), chat.getString("creator_id")));
@@ -130,11 +136,24 @@ public class MongoDBController {
         return chats;
     }
 
+    private Document findUserById(String value) {
+        FindIterable<Document> iterDoc = userCollection.find();
+        for (Document document : iterDoc) {
+            if (document.getLong("user_id") == null) {
+                return null;
+            }
+            if (document.getLong("user_id").toString().equals(value)) {
+                return document;
+            }
+        }
+        return null;
+    }
+
     @CrossOrigin
     @RequestMapping("/addMessage")
     public void addMessage(@RequestBody MessageDTO message) {
         Document doc =
-                new Document("chat_id", message.getChatId())
+                new Document("chat_id", Integer.parseInt(message.getChatId()))
                         .append("content", message.getContent())
                         .append("sender_id", message.getSenderId());
         Document chatById = findChat("chat_id", message.getChatId());
@@ -147,10 +166,10 @@ public class MongoDBController {
         List<MessageDTO> messages = new ArrayList<>();
         Document foundChat = findChat("chat_id", chatId);
         // TODO how to get a nested document from a document??
-        List<MessageDTO> foundMessages = foundChat.getList("messages", MessageDTO.class);
-/*        for (ChatDTO obj : foundMessages) {
-            messages.add(new MessageDTO(obj.getLong("chat_id").toString(), foundChat.getString("content"), foundChat.getString("sender_id")));
-        }*/
+        List<Document> foundMessages = (List<Document>) foundChat.get("messages");
+        for (Document obj : foundMessages) {
+            messages.add(new MessageDTO(obj.getLong("chat_id").toString(), obj.getString("content"), obj.getString("sender_id")));
+        }
         return messages;
     }
 
@@ -175,7 +194,7 @@ public class MongoDBController {
     @CrossOrigin
     @RequestMapping("/addAdmin")
     public void addAdmin(@RequestBody AdminInfoDTO admin) {
-        Document foundUser = findUser("user_id", String.valueOf(admin.getUserId()));
+        Document foundUser = findUserById(String.valueOf(admin.getUserId()));
         Document doc =
                 new Document("is_admin", admin.getUserId())
                         .append("birthdate", admin.getUserBirthdate())
@@ -221,10 +240,10 @@ public class MongoDBController {
     public Document findUser(String key, String value) {
         FindIterable<Document> iterDoc = userCollection.find();
         for (Document document : iterDoc) {
-            if (document.getLong(key) == null) {
+            if (document.getString(key) == null) {
                 return null;
             }
-            if (document.getLong(key).toString().equals(value)) {
+            if (document.getString(key).equals(value)) {
                 return document;
             }
         }
