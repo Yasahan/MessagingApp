@@ -96,10 +96,9 @@ public class MongoChatController {
     public void addMessage(@RequestBody MessageDTO message) {
         Document doc =
                 new Document("chat_id", Integer.parseInt(message.getChatId()))
-                        .append("message_id", message.getContent())
                         .append("content", message.getContent())
-                        .append("content", message.getContent())
-                        .append("sender_id", message.getSenderId());
+                        .append("sender_id", Integer.parseInt(message.getSenderId()))
+                        .append("sent_time", new Date());
         Document chatById = MongoUtil.findChat("chat_id", message.getChatId());
         chatCollection.updateOne(chatById, Updates.push("messages", doc));
     }
@@ -114,7 +113,7 @@ public class MongoChatController {
             return messages;
         }
         for (Document obj : foundMessages) {
-            messages.add(new MessageDTO(obj.getInteger("chat_id").toString(), obj.getString("content"), obj.getString("sender_id")));
+            messages.add(new MessageDTO(obj.getInteger("chat_id").toString(), obj.getString("content"), obj.getInteger("sender_id").toString()));
         }
         return messages;
     }

@@ -70,7 +70,20 @@ public class MongoUtil {
     }
 
     public static Integer getActiveUsers(Document chat){
-        return null;
+        Set<Integer> activeUsers = new HashSet<>();
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        List<Document> messages = (List<Document>) chat.get("messages");
+        if(messages == null){
+            return 0;
+        }
+        for(Document message : messages){
+            Date date = message.getDate("sent_time");
+            if(date.after(cal.getTime())){
+                activeUsers.add(message.getInteger("sender_id"));
+            }
+        }
+        return activeUsers.size();
     }
 
     public static Document findChat(String key, String value) {
