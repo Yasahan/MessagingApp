@@ -49,7 +49,7 @@ export class InviteFriendsComponent implements OnInit {
     console.log("inviteSelected call");
     for (let member in this.selectedUsers) {
       console.log("Inviting");
-      this.chatService.addMemberToChat(this.chatId, this.friends[member].userId).then();
+      this.chatService.addMemberToChat(this.chatId, this.selectedUsers[member].userId).then();
     }
     this.router.navigate(['../chatMenu']);
   }
