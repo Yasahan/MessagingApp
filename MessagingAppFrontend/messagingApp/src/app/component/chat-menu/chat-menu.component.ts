@@ -42,4 +42,10 @@ export class ChatMenuComponent implements OnInit {
   getUserName() : string {
     return SessionService.getCurrentUser().userName;
   }
+
+  refreshChats() {
+    this.chatService.getChatsForUserId().then(chats => {
+      this.chats = chats;
+    });
+  }
 }

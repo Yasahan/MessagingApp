@@ -23,8 +23,7 @@ public class MongoUserController {
     public UserInfoDTO addUser(@RequestBody UserInfoDTO user) {
         Document foundUser = MongoUtil.findUser("user_name", user.getUserName());
         if (foundUser != null) {
-            new UserInfoDTO(Math.toIntExact(foundUser.getLong("user_id")), user.getUserName(),
-                    user.getUserPassword());
+            return null;
         }
         Document doc =
                 new Document("user_id", userCollection.countDocuments() + 1)
