@@ -26,14 +26,13 @@ public class MongoReportsController {
     public List<FirstReportDTO> firstReport() {
         List<FirstReportDTO> report = new ArrayList<>();
         HashMap<ChatDTO, Integer> chats = new LinkedHashMap<>();
-        FindIterable<Document> allChats = chatCollection.find();
-        for (Document chat : allChats) {
+        for (Document chat : chatCollection.find()) {
             chats.put(MongoUtil.getChatAsChatDTO(chat), MongoUtil.getActiveUsers(chat));
         }
         Iterator<Map.Entry<ChatDTO, Integer>> it = chats.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<ChatDTO, Integer> pair = it.next();
-            report.add(new FirstReportDTO(pair.getKey().getChatId(), pair.getKey().getChatName(), pair.getKey().getCreatorId(), pair.getValue().toString()));
+            Map.Entry<ChatDTO, Integer> chat = it.next();
+            report.add(new FirstReportDTO(chat.getKey().getChatId(), chat.getKey().getChatName(), chat.getKey().getCreatorId(), chat.getValue().toString()));
             it.remove();
         }
         return report;
@@ -43,6 +42,9 @@ public class MongoReportsController {
     @CrossOrigin
     @GetMapping("/secondReport")
     public List<FirstReportDTO> secondReport() {
+        for (Document chat : chatCollection.find()) {
+            List<Object> members = (List<Object>) chat.get("members");
+        }
         return null;
     }
 }
