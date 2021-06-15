@@ -4,6 +4,7 @@ import {UserService} from "../../service/UserService";
 import {User} from "../../model/User";
 import {SessionService} from "../../service/SessionService";
 import {AdminService} from "../../service/AdminService";
+import {DBSwitchService} from "../../service/DBSwitchService";
 
 @Component({
   selector: 'app-login-page',

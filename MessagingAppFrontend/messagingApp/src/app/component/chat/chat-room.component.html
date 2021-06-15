@@ -21,7 +21,7 @@
   <label for="messageBox">Message Box</label>
 </div>
 <div class="d-flex justify-content-center">
-  <button type="button" class="btn btn-success" style="alignment: left" (click)="refreshMessages();">Refresh</button>
+  <button type="button" class="btn btn-success" style="float: left" (click)="refreshMessages();">Refresh</button>
   <input
     ngModel
     style="width: 90%; margin-top: 2%"
@@ -31,5 +31,5 @@
     #messageBox="ngModel"
     required
     type="text">
-  <button type="button" class="btn btn-success" style="alignment: right" (click)="sendMessage(messageBox);">Send</button>
+  <button type="button" class="btn btn-success" style="float: right" (click)="sendMessage(messageBox);">Send</button>
 </div>

@@ -52,7 +52,7 @@ public class UserController {
     public UserInfoDTO getUser(@RequestBody UserInfoDTO user) {
         try {
             ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from user_info where user_name = '"
-                    + user.getUserName() + "' and user_password = '" + user.getUserPassword()+"'");
+                    + user.getUserName() + "' and user_password = " + user.getUserPassword());
             while (resultSet.next()) {
                 return new UserInfoDTO(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3));
             }
