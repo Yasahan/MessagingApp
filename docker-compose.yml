@@ -1,0 +1,78 @@
+version: '3'
+
+services:
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./MessagingAppFrontend/Dockerfile
+    container_name: 'frontend'
+    restart: unless-stopped
+    ports:
+      - "80:4200"
+    volumes:
+      - ./MessagingAppFrontend/messagingApp:/app
+      - /app/node_modules
+    networks:
+      - net
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./MessagingAppBackend/Dockerfile
+    container_name: "backend"
+    restart: unless-stopped
+    working_dir: /app
+    depends_on: 
+      - mysql
+      - mongo
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./MessagingAppBackend:/app
+      - m2:/root/.m2
+    networks:
+      - net
+  
+  mysql:
+    container_name: "mysql"
+    restart: unless-stopped
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE
+      - MYSQL_PASSWORD
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_USER
+    volumes:
+      - data:/var/lib/mysql
+      - ./docker/mysql/mysql.sql:/docker-entrypoint-initdb.d/mysql.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - net
+  
+  mongo:
+    container_name: mongo
+    image: mongo:4.4
+    restart: unless-stopped
+    hostname: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - LANG=C.UTF-8
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - net
+
+
+volumes:
+  m2:
+  node_modules:
+  data:
+  mongodb:
+networks:
+  net:
