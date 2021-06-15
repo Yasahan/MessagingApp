@@ -25,17 +25,16 @@ public class MongoReportsController {
     @GetMapping("/firstReport")
     public List<FirstReportDTO> firstReport() {
         List<FirstReportDTO> report = new ArrayList<>();
-        HashMap<ChatDTO, Integer> chats = new HashMap<>();
+        HashMap<ChatDTO, Integer> chats = new LinkedHashMap<>();
         FindIterable<Document> allChats = chatCollection.find();
         for (Document chat : allChats) {
             chats.put(MongoUtil.getChatAsChatDTO(chat), MongoUtil.getActiveUsers(chat));
         }
-
         Iterator<Map.Entry<ChatDTO, Integer>> it = chats.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<ChatDTO, Integer> pair = it.next();
             report.add(new FirstReportDTO(pair.getKey().getChatId(), pair.getKey().getChatName(), pair.getKey().getCreatorId(), pair.getValue().toString()));
-            it.remove(); // avoids a ConcurrentModificationException
+            it.remove();
         }
         return report;
     }

@@ -33,8 +33,8 @@ public class MongoChatController {
                 }
             }
         }
-        if (userById != null) {
-            userCollection.updateOne(userById, Updates.push("chats", Integer.parseInt(chatId)));
+        userCollection.updateOne(userById, Updates.push("chats", Integer.parseInt(chatId)));
+        if (foundChat != null) {
             chatCollection.updateOne(foundChat, Updates.push("users", Integer.parseInt(memberId)));
         }
     }
@@ -43,6 +43,12 @@ public class MongoChatController {
     @RequestMapping("/addNewChat")
     public ChatDTO addNewChat(@RequestBody ChatDTO chat) {
         Document foundUser = MongoUtil.findUserById(String.valueOf(chat.getCreatorId()));
+        for (Document doc : chatCollection.find()) {
+            if(doc.getString("chat_name").equals(chat.getChatName()) && doc.getInteger("creator_id").toString().equals(chat.getCreatorId())){
+                return null;
+            }
+        }
+
         if (foundUser.get("is_admin") == null) {
             return null;
         }
@@ -56,6 +62,9 @@ public class MongoChatController {
         chatCollection.insertOne(doc);
         chatCollection.updateOne(doc, Updates.push("users", Integer.parseInt(chat.getCreatorId())));
         Document userById = MongoUtil.findUserById(chat.getCreatorId());
+        if (userById != null) {
+            userCollection.updateOne(userById, Updates.push("chats",(int) chatId));
+        }
         return new ChatDTO(Integer.toString((int) (chatCollection.countDocuments() + 1)), chat.getChatDescription(), chat.getChatName(), chat.getCreatorId());
     }
 
@@ -70,7 +79,9 @@ public class MongoChatController {
         }
         for (Object obj : foundChats) {
             Document chat = MongoUtil.findChat("chat_id", String.valueOf(obj));
-            chats.add(new ChatDTO(chat.getLong("chat_id").toString(), chat.getString("chat_description"), chat.getString("chat_name"), chat.getInteger("creator_id").toString()));
+            if(chat != null){
+                chats.add(new ChatDTO(chat.getLong("chat_id").toString(), chat.getString("chat_description"), chat.getString("chat_name"), chat.getInteger("creator_id").toString()));
+            }
         }
         return chats;
     }
@@ -100,7 +111,9 @@ public class MongoChatController {
                         .append("sender_id", Integer.parseInt(message.getSenderId()))
                         .append("sent_time", new Date());
         Document chatById = MongoUtil.findChat("chat_id", message.getChatId());
-        chatCollection.updateOne(chatById, Updates.push("messages", doc));
+        if (chatById != null) {
+            chatCollection.updateOne(chatById, Updates.push("messages", doc));
+        }
     }
 
     @CrossOrigin
@@ -136,7 +149,7 @@ public class MongoChatController {
     ChatDTO getChatUsingNameAndCreatorId(@RequestParam String chatName, @RequestParam String creatorId) {
         FindIterable<Document> iterDoc = chatCollection.find();
         for (Document document : iterDoc) {
-            if (document.getInteger("creator_id").toString().equals(creatorId)) {
+            if (document.getInteger("creator_id").toString().equals(creatorId) && document.getString("chat_name").equals(chatName)) {
                 return new ChatDTO(document.getLong("chat_id").toString(), document.getString("chat_description"), document.getString("chat_name"), document.getInteger("creator_id").toString());
             }
         }
