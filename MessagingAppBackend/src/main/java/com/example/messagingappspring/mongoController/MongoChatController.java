@@ -24,11 +24,11 @@ public class MongoChatController {
     @RequestMapping("/addMemberToChat")
     public void addMemberToChat(@RequestParam String chatId, @RequestParam String memberId) {
         Document userById = MongoUtil.findUserById(memberId);
-        Document foundChat = findChat("chat_id", chatId);
+        Document foundChat = MongoUtil.findChat("chat_id", chatId);
         List<Object> chats = (List<Object>) userById.get("chats");
-        if(chats != null){
-            for(Object chat : chats){
-                if(chatId.equals(chat.toString())){
+        if (chats != null) {
+            for (Object chat : chats) {
+                if (chatId.equals(chat.toString())) {
                     return;
                 }
             }
@@ -42,6 +42,10 @@ public class MongoChatController {
     @CrossOrigin
     @RequestMapping("/addNewChat")
     public ChatDTO addNewChat(@RequestBody ChatDTO chat) {
+        Document foundUser = MongoUtil.findUserById(String.valueOf(chat.getCreatorId()));
+        if (foundUser.get("is_admin") == null) {
+            return null;
+        }
         long chatId = chatCollection.countDocuments() + 1;
         Document doc =
                 new Document("chat_id", chatId)
@@ -65,7 +69,7 @@ public class MongoChatController {
             return chats;
         }
         for (Object obj : foundChats) {
-            Document chat = findChat("chat_id", String.valueOf(obj));
+            Document chat = MongoUtil.findChat("chat_id", String.valueOf(obj));
             chats.add(new ChatDTO(chat.getLong("chat_id").toString(), chat.getString("chat_description"), chat.getString("chat_name"), chat.getInteger("creator_id").toString()));
         }
         return chats;
@@ -80,7 +84,7 @@ public class MongoChatController {
             return false;
         }
         for (Object obj : foundChats) {
-            if(obj.toString().equals(chatId)){
+            if (obj.toString().equals(chatId)) {
                 return true;
             }
         }
@@ -92,9 +96,11 @@ public class MongoChatController {
     public void addMessage(@RequestBody MessageDTO message) {
         Document doc =
                 new Document("chat_id", Integer.parseInt(message.getChatId()))
+                        .append("message_id", message.getContent())
+                        .append("content", message.getContent())
                         .append("content", message.getContent())
                         .append("sender_id", message.getSenderId());
-        Document chatById = findChat("chat_id", message.getChatId());
+        Document chatById = MongoUtil.findChat("chat_id", message.getChatId());
         chatCollection.updateOne(chatById, Updates.push("messages", doc));
     }
 
@@ -102,7 +108,7 @@ public class MongoChatController {
     @RequestMapping("/getMessages")
     public List<MessageDTO> getMessages(@RequestParam String chatId) {
         List<MessageDTO> messages = new ArrayList<>();
-        Document foundChat = findChat("chat_id", chatId);
+        Document foundChat = MongoUtil.findChat("chat_id", chatId);
         List<Document> foundMessages = (List<Document>) foundChat.get("messages");
         if (foundMessages == null) {
             return messages;
@@ -117,23 +123,13 @@ public class MongoChatController {
     @RequestMapping("/getMemberIdsOfGivenChat")
     public List<String> getMemberIdsOfGivenChat(@RequestParam String chatId) {
         List<String> members = new ArrayList<>();
-        Document document = findChat("chat_id", chatId);
+        Document document = MongoUtil.findChat("chat_id", chatId);
         List<Object> users = (List<Object>) document.get("users");
 
         for (Object obj : users) {
             members.add(obj.toString());
         }
         return members;
-    }
-
-    public Document findChat(String key, String value) {
-        FindIterable<Document> iterDoc = chatCollection.find();
-        for (Document document : iterDoc) {
-            if (document.getLong(key).toString().equals(value)) {
-                return document;
-            }
-        }
-        return null;
     }
 
     @CrossOrigin

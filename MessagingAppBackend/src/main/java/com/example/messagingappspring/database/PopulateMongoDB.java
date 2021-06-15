@@ -1,5 +1,6 @@
 package com.example.messagingappspring.database;
 
+import com.example.messagingappspring.DTO.AdminInfoDTO;
 import com.example.messagingappspring.DTO.HobbyDTO;
 import com.example.messagingappspring.DTO.UserInfoDTO;
 import com.example.messagingappspring.mongoController.MongoUtil;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.print.Doc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -68,19 +70,49 @@ public class PopulateMongoDB {
 
 
     void addAdmins() {
-        FindIterable<Document> iterDoc = userCollection.find();
+/*        List<AdminInfoDTO> admins = new ArrayList<>();
+        FindIterable<Document> users = userCollection.find();
+
+        for(Document user : users){
+            try {
+                ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from admin_info where user_id = '"
+                        + user.getInteger("user_id") + "'");
+                while (resultSet.next()) {
+                    admins.add(new AdminInfoDTO(resultSet.getInt(1), resultSet.getString(2),
+                            resultSet.getString(3), resultSet.getString(4), resultSet.getString(5)));
+                }
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+
         int counter = 0;
-        for (Document user : iterDoc) {
+        for (AdminInfoDTO admin : admins) {
             Document doc =
-                    new Document("is_admin", user.getLong("user_id"))
-                            .append("birthdate", new Date())
-                            .append("email", user.getString("user_name") + "@gmail.com");
+                    new Document()
+                            .append("birthdate", admin.getUserBirthdate())
+                            .append("email", admin.getUserEmail());
             userCollection.updateOne(user, Updates.set("is_admin", doc));
             counter++;
             if(counter == 250){
                 return;
             }
+        }*/
+    }
+
+    void addFriends(){
+
+/*        Document user = MongoUtil.findUserById(userId);
+        Document friend = MongoUtil.findUserById(friendId);
+        if(isAlreadyFriend(userId,friendId)){
+            return;
         }
+        if (user != null) {
+            userCollection.updateOne(user, Updates.push("friends", Integer.parseInt(friendId)));
+        }
+        if (friend != null) {
+            userCollection.updateOne(friend, Updates.push("friends", Integer.parseInt(userId)));
+        }*/
     }
 
 
