@@ -70,7 +70,7 @@ public class PopulateMongoDB {
 
 
     void addAdmins() {
-/*        List<AdminInfoDTO> admins = new ArrayList<>();
+        List<AdminInfoDTO> admins = new ArrayList<>();
         FindIterable<Document> users = userCollection.find();
 
         for(Document user : users){
@@ -86,7 +86,7 @@ public class PopulateMongoDB {
             }
         }
 
-        int counter = 0;
+/*        int counter = 0;
         for (AdminInfoDTO admin : admins) {
             Document doc =
                     new Document()

@@ -8,7 +8,7 @@ import {DBSwitchService} from "../../service/DBSwitchService";
 })
 export class MainManuComponent implements OnInit {
 
-  dbName:string = 'MySQL';
+  dbName:string = DBSwitchService.isMongoDB === true ? 'MongoDB' : 'MySQL';
 
   constructor() { }
 

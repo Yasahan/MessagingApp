@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @RestController()
 @RequestMapping("mongo")
@@ -28,11 +26,24 @@ public class MongoReportsController {
     public List<FirstReportDTO> firstReport() {
         List<FirstReportDTO> report = new ArrayList<>();
         HashMap<ChatDTO, Integer> chats = new HashMap<>();
-
         FindIterable<Document> allChats = chatCollection.find();
-        for(Document chat : allChats){
-            chats.put(MongoUtil.getChatAsChatDTO(chat),MongoUtil.getActiveUsers(chat));
+        for (Document chat : allChats) {
+            chats.put(MongoUtil.getChatAsChatDTO(chat), MongoUtil.getActiveUsers(chat));
+        }
+
+        Iterator<Map.Entry<ChatDTO, Integer>> it = chats.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<ChatDTO, Integer> pair = it.next();
+            report.add(new FirstReportDTO(pair.getKey().getChatId(), pair.getKey().getChatName(), pair.getKey().getCreatorId(), pair.getValue().toString()));
+            it.remove(); // avoids a ConcurrentModificationException
         }
         return report;
+    }
+
+
+    @CrossOrigin
+    @GetMapping("/secondReport")
+    public List<FirstReportDTO> secondReport() {
+        return null;
     }
 }
