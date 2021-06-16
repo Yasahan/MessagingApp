@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {PopulateService} from "../../service/PopulateService";
 
 @Component({
@@ -8,10 +8,29 @@ import {PopulateService} from "../../service/PopulateService";
 })
 export class PopulateDbComponent implements OnInit {
 
-  constructor(private populateService: PopulateService) { }
+  progressText:string = '';
 
-  ngOnInit(): void {
-    this.populateService.populateMySQL().then();
+  constructor(private populateService: PopulateService) {
   }
 
+  ngOnInit(): void {
+
+  }
+
+  populateMySQL() {
+    this.progressText = 'MySQL populate started... This could take a minute';
+    this.populateService.populateMySQL().subscribe(result => {
+        this.progressText = "Data inserted successfully!";
+      }
+    );
+
+  }
+
+  migrateToMongo() {
+    this.progressText = 'Date Migration to MongoDB started... This could take a minute';
+    this.populateService.migrateToMongo().subscribe(result => {
+      this.progressText = "Migration Successful!";
+      }
+    );
+  }
 }

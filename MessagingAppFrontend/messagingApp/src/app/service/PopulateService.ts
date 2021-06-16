@@ -15,11 +15,16 @@ const httpOptions = {
 export class PopulateService {
 
   populateMySQLUrl: string = 'http://localhost:8080/populateDB';
+  migrateToMongoUrl: string = 'http://localhost:8080/mongo/migrate';
 
   constructor(private http: HttpClient) {
   }
 
-  async populateMySQL() {
-    return await this.http.get<Observable<void>>(this.populateMySQLUrl).toPromise();
+  populateMySQL() {
+    return this.http.get<Observable<void>>(this.populateMySQLUrl);
+  }
+
+  migrateToMongo() {
+    return this.http.get<Observable<void>>(this.migrateToMongoUrl);
   }
 }
