@@ -3,8 +3,10 @@ package com.example.messagingappspring.mongoController;
 import com.example.messagingappspring.DTO.ChatDTO;
 import com.example.messagingappspring.DTO.MessageDTO;
 import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -43,10 +45,10 @@ public class MongoChatController {
     @RequestMapping("/addNewChat")
     public ChatDTO addNewChat(@RequestBody ChatDTO chat) {
         Document foundUser = MongoUtil.findUserById(String.valueOf(chat.getCreatorId()));
-        for (Document doc : chatCollection.find()) {
-            if(doc.getString("chat_name").equals(chat.getChatName()) && doc.getInteger("creator_id").toString().equals(chat.getCreatorId())){
-                return null;
-            }
+
+        Document chatFound = chatCollection.find(Filters.and(Filters.eq("chat_name", chat.getChatName()), Filters.eq("creator_id", chat.getCreatorId()))).first();
+        if(chatFound != null){
+            return null;
         }
 
         if (foundUser.get("is_admin") == null) {
@@ -63,7 +65,7 @@ public class MongoChatController {
         chatCollection.updateOne(doc, Updates.push("users", Integer.parseInt(chat.getCreatorId())));
         Document userById = MongoUtil.findUserById(chat.getCreatorId());
         if (userById != null) {
-            userCollection.updateOne(userById, Updates.push("chats",(int) chatId));
+            userCollection.updateOne(userById, Updates.push("chats", (int) chatId));
         }
         return new ChatDTO(Integer.toString((int) (chatCollection.countDocuments() + 1)), chat.getChatDescription(), chat.getChatName(), chat.getCreatorId());
     }
@@ -89,17 +91,7 @@ public class MongoChatController {
     @CrossOrigin
     @RequestMapping("/checkIfMember")
     public boolean checkIfMember(@RequestParam String chatId, @RequestParam String memberId) {
-        Document foundUser = MongoUtil.findUserById(memberId);
-        List<Object> foundChats = (List<Object>) foundUser.get("chats");
-        if (foundChats == null) {
-            return false;
-        }
-        for (Object obj : foundChats) {
-            if (obj.toString().equals(chatId)) {
-                return true;
-            }
-        }
-        return false;
+        return chatCollection.find(Filters.and(Filters.eq("chat_id", Integer.parseInt(chatId)), Filters.in("users", memberId))).first() == null;
     }
 
     @CrossOrigin
@@ -135,9 +127,7 @@ public class MongoChatController {
     @RequestMapping("/getMemberIdsOfGivenChat")
     public List<String> getMemberIdsOfGivenChat(@RequestParam String chatId) {
         List<String> members = new ArrayList<>();
-        Document document = MongoUtil.findChat("chat_id", chatId);
-        List<Object> users = (List<Object>) document.get("users");
-
+        List<Object> users = (List<Object>)  MongoUtil.findChat("chat_id", chatId).get("users");
         for (Object obj : users) {
             members.add(obj.toString());
         }
@@ -147,15 +137,10 @@ public class MongoChatController {
     @CrossOrigin
     @RequestMapping("/getChatUsingNameAndCreatorId")
     ChatDTO getChatUsingNameAndCreatorId(@RequestParam String chatName, @RequestParam String creatorId) throws InterruptedException {
-        FindIterable<Document> iterDoc = chatCollection.find();
         // wait for 2 seconds so that new created chat can be saved async to the database
         Thread.sleep(2000);
-        for (Document document : iterDoc) {
-            if (document.getInteger("creator_id").toString().equals(creatorId) && document.getString("chat_name").equals(chatName)) {
-                return new ChatDTO(document.getLong("chat_id").toString(), document.getString("chat_description"), document.getString("chat_name"), document.getInteger("creator_id").toString());
-            }
-        }
-        return null;
+        Document foundChat = chatCollection.find(Filters.and(Filters.eq("chat_name", chatName), Filters.eq("creator_id", Integer.parseInt(creatorId)))).first();
+        return new ChatDTO(foundChat.getLong("chat_id").toString(), foundChat.getString("chat_description"), foundChat.getString("chat_name"), foundChat.getInteger("creator_id").toString());
     }
 
 }

@@ -44,7 +44,6 @@ public class MongoReportsController {
     @CrossOrigin
     @GetMapping("/secondReport")
     public List<FirstReportDTO> secondReport() {
-
         List<FirstReportDTO> report = new ArrayList<>();
 
         for (Document chat : chatCollection.find()) {

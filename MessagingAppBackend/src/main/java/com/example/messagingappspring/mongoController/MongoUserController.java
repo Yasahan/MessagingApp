@@ -3,6 +3,7 @@ package com.example.messagingappspring.mongoController;
 import com.example.messagingappspring.DTO.AdminInfoDTO;
 import com.example.messagingappspring.DTO.UserInfoDTO;
 import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,6 @@ public class MongoUserController {
     @GetMapping("/getUsers")
     public List<UserInfoDTO> getUsers() {
         List<UserInfoDTO> users = new ArrayList<>();
-
         FindIterable<Document> iterDoc = userCollection.find();
         for (Document document : iterDoc) {
             int user_id = Math.toIntExact(document.getLong("user_id"));
@@ -73,13 +73,7 @@ public class MongoUserController {
     @CrossOrigin
     @RequestMapping("/checkUserName")
     public boolean isUserAlreadyExist(@RequestBody String userName) {
-        FindIterable<Document> iterDoc = userCollection.find();
-        for (Document document : iterDoc) {
-            if (document.getString("user_name").equals(userName)) {
-                return true;
-            }
-        }
-        return false;
+        return userCollection.find(Filters.eq("user_name", userName)).first() == null;
     }
 
     /**
@@ -104,6 +98,9 @@ public class MongoUserController {
     public List<UserInfoDTO> getFriends(@RequestParam String userId) {
         List<UserInfoDTO> friends = new ArrayList<>();
         Document user = MongoUtil.findUserById(userId);
+        if(user == null){
+            return friends;
+        }
         List<Object> foundFriends = (List<Object>) user.get("friends");
         if (foundFriends == null) {
             return friends;

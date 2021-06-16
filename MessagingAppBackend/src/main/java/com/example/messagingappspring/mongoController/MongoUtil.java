@@ -2,6 +2,7 @@ package com.example.messagingappspring.mongoController;
 
 import com.example.messagingappspring.DTO.*;
 import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.springframework.web.bind.annotation.*;
@@ -21,39 +22,15 @@ public class MongoUtil {
 
 
     public static Document findUser(String key, String value) {
-        FindIterable<Document> iterDoc = userCollection.find();
-        for (Document document : iterDoc) {
-            if (document.getString(key) == null) {
-                return null;
-            }
-            if (document.getString(key).equals(value)) {
-                return document;
-            }
-        }
-        return null;
+        return userCollection.find(Filters.eq(key,value)).first();
     }
 
     public static Document findUserById(String value) {
-        FindIterable<Document> iterDoc = userCollection.find();
-        for (Document document : iterDoc) {
-            if (document.getLong("user_id") == null) {
-                return null;
-            }
-            if (document.getLong("user_id").toString().equals(value)) {
-                return document;
-            }
-        }
-        return null;
+        return userCollection.find(Filters.eq("user_id",Integer.parseInt(value))).first();
     }
 
     public static Document loginValidation(String userName, String userPassword) {
-        FindIterable<Document> iterDoc = userCollection.find();
-        for (Document document : iterDoc) {
-            if (document.getString("user_name") != null && document.getString("user_name").equals(userName) && document.getString("user_password").equals(userPassword)) {
-                return document;
-            }
-        }
-        return null;
+        return userCollection.find(Filters.and(Filters.eq("user_name",userName), Filters.eq("user_password",userPassword))).first();
     }
 
     public static List<ChatDTO> getAllChatsAsChatDTO() {
@@ -87,13 +64,7 @@ public class MongoUtil {
     }
 
     public static Document findChat(String key, String value) {
-        FindIterable<Document> iterDoc = chatCollection.find();
-        for (Document document : iterDoc) {
-            if (document.getLong(key).toString().equals(value)) {
-                return document;
-            }
-        }
-        return null;
+        return chatCollection.find(Filters.eq(key,Integer.parseInt(value))).first();
     }
 
 }
