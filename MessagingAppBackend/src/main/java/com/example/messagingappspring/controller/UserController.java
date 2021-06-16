@@ -63,12 +63,6 @@ public class UserController {
     }
 
     @CrossOrigin
-    @GetMapping("/test")
-    String test() {
-        return "Endpoint works!";
-    }
-
-    @CrossOrigin
     @RequestMapping("/addUser")
     public UserInfoDTO addUser(@RequestBody UserInfoDTO user) {
         try {
