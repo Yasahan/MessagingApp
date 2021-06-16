@@ -47,8 +47,6 @@ services:
     volumes:
       - data:/var/lib/mysql
       - ./docker/mysql/mysql.sql:/docker-entrypoint-initdb.d/mysql.sql
-    ports:
-      - "3306:3306"
     networks:
       - net
   
@@ -57,8 +55,6 @@ services:
     image: mongo:4.4
     restart: unless-stopped
     hostname: mongo
-    ports:
-      - "27017:27017"
     environment:
       - LANG=C.UTF-8
       - MONGO_INITDB_ROOT_USERNAME
