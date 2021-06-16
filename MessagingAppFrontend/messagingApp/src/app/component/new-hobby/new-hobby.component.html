@@ -1,14 +1,14 @@
 <div class="column">
   <p style="text-align:center; margin-top: 5%">Hobbies</p>
-  <div style="margin-top: 10%">
+  <div class="hobbiesList" style="margin-top: 5%">
     <ul *ngFor="let hobby of hobbies" class="list-group">
       <li class="list-group-item">
         <app-hobby-comp [hobby]="hobby" (click)="tapOnHobby(hobby)"></app-hobby-comp>
       </li>
     </ul>
   </div>
-  <div class="d-flex justify-content-center" style="margin-top: 10%">
-    <button class="btn btn-primary" (click)="addSelectedHobbies()">Add selected hobbies</button>
-  </div>
+</div>
+<div class="d-flex justify-content-center" style="margin-top: 10%">
+  <button class="btn btn-primary" (click)="addSelectedHobbies()">Add selected hobbies</button>
 </div>
 

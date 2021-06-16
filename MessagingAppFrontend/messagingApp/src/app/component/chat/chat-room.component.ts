@@ -23,10 +23,10 @@ export class ChatRoomComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
 
-    if (SessionService.getCurrentUser() === undefined) {
-      this.router.navigate(['/login']);
-      return;
-    }
+    // if (SessionService.getCurrentUser() === undefined) {
+    //   this.router.navigate(['/login']);
+    //   return;
+    // }
 
     this.route.paramMap.subscribe(params => {
       this.chat.chatName = params.get('chatName');

@@ -8,3 +8,8 @@
   text-align: center;
 }
 
+.hobbiesList {
+  height: 400px;
+  background-color: #eee;
+  overflow: scroll;
+}

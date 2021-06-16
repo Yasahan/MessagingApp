@@ -1,35 +1,37 @@
-<div class="d-flex justify-content-center">
-<p style="color: cadetblue; font-size: xx-large">{{ chat.chatName }}</p>
-<!--  <div class="btn btn-primary" [routerLink]="['inviteFriends/', chat]" >Send invite</div>-->
+<div class="head-chat-room" style="align-content: center">
+<!--  <p style="color: cadetblue; font-size: xx-large; text-align: center">{{ chat.chatName }}</p>-->
+  <p style="color: cadetblue; font-size: xx-large; text-align: center"> {{ chat.chatName }}
+    <button type="button" class="btn btn-success"  style="float: left; margin-left: 10px; margin-right: 10px; height: 50%; align-content: center; margin-top: 5px" (click)="refreshMessages();">Refresh</button>
+    <button type="button" class="btn btn-success" style="float: right; margin-right: 10px; margin-left: 10px; height: 50%; margin-top: 5px;" (click)="routeInviteFriends(chat);">Send invite</button>
+  </p>
 </div>
 
-<button type="button" class="btn btn-success" style="alignment: left" (click)="routeInviteFriends(chat);">Send invite</button>
+<div class="messagesList">
+  <ul *ngFor="let message of messages" class="list-group">
+    <li class="list-group-item">
+      <div *ngIf="message.senderId == getCurrentUserId(); else elseBlock">
+        <p style="text-align: right"> {{ message.content }}</p>
+      </div>
+      <ng-template #elseBlock>
+        <p style="text-align: left"> {{ message.content }}</p>
+      </ng-template>
+    </li>
+  </ul>
+</div>
 
-<ul *ngFor="let message of messages" class="list-group">
-  <li class="list-group-item">
-    <div *ngIf="message.senderId == getCurrentUserId(); else elseBlock">
-      <p style="text-align: right"> {{ message.content }}</p>
+
+<div class="d-flex justify-content-center" style="margin-bottom: 10px">
+  <div class="form-outline" style="vertical-align:middle">
+    <div class="container">
+    <input
+      ngModel
+      class="form-control"
+      name="messageBox"
+      #messageBox="ngModel"
+      placeholder="Message"
+      required
+      type="text">
+    <button type="button" class="btn btn-success" style="text-align: center; margin-left: 10px" (click)="sendMessage(messageBox);">Send</button>
     </div>
-    <ng-template #elseBlock>
-      <p style="text-align: left"> {{ message.content }}</p>
-    </ng-template>
-  </li>
-</ul>
-
-
-<div style="margin-top: 80%" class="d-flex justify-content-center">
-  <label for="messageBox">Message Box</label>
-</div>
-<div class="d-flex justify-content-center">
-  <button type="button" class="btn btn-success" style="float: left" (click)="refreshMessages();">Refresh</button>
-  <input
-    ngModel
-    style="width: 90%; margin-top: 2%"
-    class="form-control"
-    id="messageBox"
-    name="messageBox"
-    #messageBox="ngModel"
-    required
-    type="text">
-  <button type="button" class="btn btn-success" style="float: right" (click)="sendMessage(messageBox);">Send</button>
+  </div>
 </div>
