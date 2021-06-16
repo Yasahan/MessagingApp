@@ -7,4 +7,3 @@ RUN apt-get update
 COPY ./MessagingAppBackend /app
 
 RUN chmod +x /app/mvnw
-

@@ -17,7 +17,7 @@ import java.util.*;
 @RequestMapping("mongo")
 public class MongoHobbyController {
 
-    MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+    MongoClient mongoClient = MongoClients.create("mongodb://root:sadfs$.df3fg@mongo:27017");
     MongoDatabase database = mongoClient.getDatabase("messagingappdb");
     MongoCollection<Document> hobbiesCollection = database.getCollection("hobbies");
     MongoCollection<Document> userCollection = database.getCollection("user_info");

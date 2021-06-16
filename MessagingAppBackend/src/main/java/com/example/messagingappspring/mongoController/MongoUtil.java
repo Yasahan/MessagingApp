@@ -14,7 +14,7 @@ import java.util.*;
 @RestController()
 @RequestMapping("mongo")
 public class MongoUtil {
-    public static MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+    public static MongoClient mongoClient = MongoClients.create("mongodb://root:sadfs$.df3fg@mongo:27017");
     public static MongoDatabase database = mongoClient.getDatabase("messagingappdb");
     public static MongoCollection<Document> userCollection = database.getCollection("user_info");
     public static MongoCollection<Document> chatCollection = database.getCollection("chat");
