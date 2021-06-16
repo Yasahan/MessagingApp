@@ -1,9 +1,6 @@
 package com.example.messagingappspring.database;
 
-import com.example.messagingappspring.DTO.AdminInfoDTO;
-import com.example.messagingappspring.DTO.ChatDTO;
-import com.example.messagingappspring.DTO.HobbyDTO;
-import com.example.messagingappspring.DTO.UserInfoDTO;
+import com.example.messagingappspring.DTO.*;
 import com.example.messagingappspring.mongoController.MongoUtil;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Updates;
@@ -39,6 +36,7 @@ public class MigrateDataToMongoDB {
         addFriends();
         addchats();
         addChatMembers();
+        addMessages();
     }
 
 
@@ -134,7 +132,7 @@ public class MigrateDataToMongoDB {
         }
     }
 
-    void addchats(){
+    void addchats() {
         List<ChatDTO> chats = new ArrayList<>();
         try {
             ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from chat");
@@ -145,10 +143,10 @@ public class MigrateDataToMongoDB {
             throwables.printStackTrace();
         }
 
-        for(ChatDTO chat : chats){
+        for (ChatDTO chat : chats) {
             Document foundUser = MongoUtil.findUserById(String.valueOf(chat.getCreatorId()));
             for (Document doc : chatCollection.find()) {
-                if(doc.getString("chat_name").equals(chat.getChatName()) && doc.getInteger("creator_id").toString().equals(chat.getCreatorId())){
+                if (doc.getString("chat_name").equals(chat.getChatName()) && doc.getInteger("creator_id").toString().equals(chat.getCreatorId())) {
                     return;
                 }
             }
@@ -168,12 +166,12 @@ public class MigrateDataToMongoDB {
             chatCollection.updateOne(doc, Updates.push("users", Integer.parseInt(chat.getCreatorId())));
             Document userById = MongoUtil.findUserById(chat.getCreatorId());
             if (userById != null) {
-                userCollection.updateOne(userById, Updates.push("chats",(int) chatId));
+                userCollection.updateOne(userById, Updates.push("chats", (int) chatId));
             }
         }
     }
 
-    void addChatMembers(){
+    void addChatMembers() {
         List<ChatDTO> chats = new ArrayList<>();
         try {
             ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from chat");
@@ -184,9 +182,9 @@ public class MigrateDataToMongoDB {
             throwables.printStackTrace();
         }
 
-        for(ChatDTO chat : chats){
+        for (ChatDTO chat : chats) {
             try {
-                ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from is_member where chat_id =" +  chat.getChatId());
+                ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from is_member where chat_id =" + chat.getChatId());
                 while (resultSet.next()) {
                     chatCollection.updateOne(MongoUtil.findChat("chat_id", chat.getChatId()), Updates.push("users", resultSet.getInt(2)));
                 }
@@ -194,7 +192,25 @@ public class MigrateDataToMongoDB {
                 throwables.printStackTrace();
             }
         }
+    }
 
+    void addMessages() {
+        try {
+            ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from message");
+            while (resultSet.next()) {
+                Document doc =
+                        new Document("chat_id", resultSet.getInt(2))
+                                .append("content", resultSet.getString(4))
+                                .append("sender_id", resultSet.getInt(5))
+                                .append("sent_time", resultSet.getDate(3));
+                Document chatById = MongoUtil.findChat("chat_id", String.valueOf(resultSet.getInt(2)));
+                if (chatById != null) {
+                    chatCollection.updateOne(chatById, Updates.push("messages", doc));
+                }
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
 

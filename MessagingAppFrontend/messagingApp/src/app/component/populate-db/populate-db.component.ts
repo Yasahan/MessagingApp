@@ -27,7 +27,7 @@ export class PopulateDbComponent implements OnInit {
   }
 
   migrateToMongo() {
-    this.progressText = 'Date Migration to MongoDB started... This could take a minute';
+    this.progressText = 'Data Migration to MongoDB started... This could take a minute';
     this.populateService.migrateToMongo().subscribe(result => {
       this.progressText = "Migration Successful!";
       }
