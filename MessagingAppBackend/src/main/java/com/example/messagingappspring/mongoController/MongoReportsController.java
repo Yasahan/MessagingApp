@@ -46,15 +46,11 @@ public class MongoReportsController {
     public List<FirstReportDTO> secondReport() {
 
         List<FirstReportDTO> report = new ArrayList<>();
-        HashMap<Document, Integer> chats = new LinkedHashMap<>();
 
         for (Document chat : chatCollection.find()) {
             List<Object> members = (List<Object>) chat.get("users");
-            if (members != null) {
-                chats.put(chat, members.size());
-            }
-        }
 
+        }
         return null;
     }
 }

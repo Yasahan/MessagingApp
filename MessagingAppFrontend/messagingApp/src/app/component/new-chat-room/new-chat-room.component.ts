@@ -61,7 +61,6 @@ export class NewChatRoomComponent implements OnInit {
         if(foundChat!=null) {
           this.chatService.addMemberToChat(foundChat.chatId, foundChat.creatorId).then();
           for (let member in this.usersForNewChatRoom) {
-            console.log("checkpoint " + this.usersForNewChatRoom[member].userId)
             this.chatService.addMemberToChat(foundChat.chatId, this.usersForNewChatRoom[member].userId).then();
           }
         }
