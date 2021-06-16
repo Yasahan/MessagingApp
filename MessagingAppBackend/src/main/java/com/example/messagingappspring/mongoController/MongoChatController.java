@@ -6,7 +6,6 @@ import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -27,13 +26,9 @@ public class MongoChatController {
     public void addMemberToChat(@RequestParam String chatId, @RequestParam String memberId) {
         Document userById = MongoUtil.findUserById(memberId);
         Document foundChat = MongoUtil.findChat("chat_id", chatId);
-        List<Object> chats = (List<Object>) userById.get("chats");
-        if (chats != null) {
-            for (Object chat : chats) {
-                if (chatId.equals(chat.toString())) {
-                    return;
-                }
-            }
+        boolean isAlreadyMember = userCollection.find(Filters.and(Filters.eq("user_id", Integer.parseInt(memberId)), Filters.in("chats", Integer.parseInt(chatId)))).first() != null;
+        if (isAlreadyMember) {
+            return;
         }
         userCollection.updateOne(userById, Updates.push("chats", Integer.parseInt(chatId)));
         if (foundChat != null) {
@@ -45,15 +40,11 @@ public class MongoChatController {
     @RequestMapping("/addNewChat")
     public ChatDTO addNewChat(@RequestBody ChatDTO chat) {
         Document foundUser = MongoUtil.findUserById(String.valueOf(chat.getCreatorId()));
-
         Document chatFound = chatCollection.find(Filters.and(Filters.eq("chat_name", chat.getChatName()), Filters.eq("creator_id", chat.getCreatorId()))).first();
-        if(chatFound != null){
+        if (chatFound != null || foundUser.get("is_admin") == null) {
             return null;
         }
 
-        if (foundUser.get("is_admin") == null) {
-            return null;
-        }
         long chatId = chatCollection.countDocuments() + 1;
         Document doc =
                 new Document("chat_id", chatId)
@@ -81,7 +72,7 @@ public class MongoChatController {
         }
         for (Object obj : foundChats) {
             Document chat = MongoUtil.findChat("chat_id", String.valueOf(obj));
-            if(chat != null){
+            if (chat != null) {
                 chats.add(new ChatDTO(chat.getLong("chat_id").toString(), chat.getString("chat_description"), chat.getString("chat_name"), chat.getInteger("creator_id").toString()));
             }
         }
@@ -112,8 +103,7 @@ public class MongoChatController {
     @RequestMapping("/getMessages")
     public List<MessageDTO> getMessages(@RequestParam String chatId) {
         List<MessageDTO> messages = new ArrayList<>();
-        Document foundChat = MongoUtil.findChat("chat_id", chatId);
-        List<Document> foundMessages = (List<Document>) foundChat.get("messages");
+        List<Document> foundMessages = (List<Document>) MongoUtil.findChat("chat_id", chatId).get("messages");
         if (foundMessages == null) {
             return messages;
         }
@@ -127,7 +117,7 @@ public class MongoChatController {
     @RequestMapping("/getMemberIdsOfGivenChat")
     public List<String> getMemberIdsOfGivenChat(@RequestParam String chatId) {
         List<String> members = new ArrayList<>();
-        List<Object> users = (List<Object>)  MongoUtil.findChat("chat_id", chatId).get("users");
+        List<Object> users = (List<Object>) MongoUtil.findChat("chat_id", chatId).get("users");
         for (Object obj : users) {
             members.add(obj.toString());
         }

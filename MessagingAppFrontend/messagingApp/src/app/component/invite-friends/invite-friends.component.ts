@@ -46,10 +46,9 @@ export class InviteFriendsComponent implements OnInit {
   }
 
   inviteSelected() {
-    console.log("inviteSelected call");
     for (let member in this.selectedUsers) {
-      console.log("Inviting");
       this.chatService.addMemberToChat(this.chatId, this.selectedUsers[member].userId).then();
+      alert("Friend invited!")
     }
     this.router.navigate(['../chatMenu']);
   }

@@ -40,12 +40,8 @@ public class MongoUserController {
     @GetMapping("/getUsers")
     public List<UserInfoDTO> getUsers() {
         List<UserInfoDTO> users = new ArrayList<>();
-        FindIterable<Document> iterDoc = userCollection.find();
-        for (Document document : iterDoc) {
-            int user_id = Math.toIntExact(document.getLong("user_id"));
-            String user_name = document.getString("user_name");
-            String user_password = document.getString("user_password");
-            users.add(new UserInfoDTO(user_id, user_name, user_password));
+        for (Document document : userCollection.find()) {
+            users.add(new UserInfoDTO(Math.toIntExact(document.getLong("user_id")), document.getString("user_name"), document.getString("user_password")));
         }
         return users;
     }
@@ -63,11 +59,7 @@ public class MongoUserController {
     @CrossOrigin
     @RequestMapping("/getAdminForLogin")
     public UserInfoDTO getAdminForLogin(@RequestBody UserInfoDTO user) {
-        Document foundUser = MongoUtil.findUserById(String.valueOf(user.getUserId()));
-        if (foundUser.get("is_admin") != null) {
-            return user;
-        }
-        return null;
+        return MongoUtil.findUserById(String.valueOf(user.getUserId())).get("is_admin") != null ? user : null;
     }
 
     @CrossOrigin
@@ -98,7 +90,7 @@ public class MongoUserController {
     public List<UserInfoDTO> getFriends(@RequestParam String userId) {
         List<UserInfoDTO> friends = new ArrayList<>();
         Document user = MongoUtil.findUserById(userId);
-        if(user == null){
+        if (user == null) {
             return friends;
         }
         List<Object> foundFriends = (List<Object>) user.get("friends");
@@ -129,7 +121,7 @@ public class MongoUserController {
     public void addFriend(@RequestParam String userId, @RequestParam String friendId) {
         Document user = MongoUtil.findUserById(userId);
         Document friend = MongoUtil.findUserById(friendId);
-        if(isAlreadyFriend(userId,friendId)){
+        if (isAlreadyFriend(userId, friendId)) {
             return;
         }
         if (user != null) {
@@ -140,21 +132,9 @@ public class MongoUserController {
         }
     }
 
-    boolean isAlreadyFriend(String userId, String friendId){
-        Document user = MongoUtil.findUserById(userId);
-        List<Object> friends = (List<Object>) user.get("friends");
-        if(friends == null){
-            return false;
-        }
-        for(Object friend : friends){
-            if(friend.toString().equals(friendId)){
-                return true;
-            }
-        }
-        return false;
+    boolean isAlreadyFriend(String userId, String friendId) {
+        return userCollection.find(Filters.and(Filters.eq("user_id", Integer.parseInt(userId)), Filters.in("friends", Integer.parseInt(friendId)))).first() == null;
     }
-
-
 
 
 }

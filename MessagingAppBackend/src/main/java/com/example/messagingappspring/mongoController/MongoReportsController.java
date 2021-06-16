@@ -27,6 +27,10 @@ public class MongoReportsController {
     public List<FirstReportDTO> firstReport() {
         List<FirstReportDTO> report = new ArrayList<>();
         HashMap<ChatDTO, Integer> chats = new LinkedHashMap<>();
+
+
+
+
         for (Document chat : chatCollection.find()) {
             chats.put(MongoUtil.getChatAsChatDTO(chat), MongoUtil.getActiveUsers(chat));
         }
