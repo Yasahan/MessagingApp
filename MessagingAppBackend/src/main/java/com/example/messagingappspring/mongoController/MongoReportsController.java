@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController()
 @RequestMapping("mongo")
@@ -35,16 +36,25 @@ public class MongoReportsController {
             report.add(new FirstReportDTO(chat.getKey().getChatId(), chat.getKey().getChatName(), chat.getKey().getCreatorId(), chat.getValue().toString()));
             it.remove();
         }
-        return report;
+        report.sort(Comparator.comparing(FirstReportDTO::getNumOfActiveMembers).reversed());
+        return report.stream().limit(3).collect(Collectors.toList());
     }
 
 
     @CrossOrigin
     @GetMapping("/secondReport")
     public List<FirstReportDTO> secondReport() {
+
+        List<FirstReportDTO> report = new ArrayList<>();
+        HashMap<Document, Integer> chats = new LinkedHashMap<>();
+
         for (Document chat : chatCollection.find()) {
-            List<Object> members = (List<Object>) chat.get("members");
+            List<Object> members = (List<Object>) chat.get("users");
+            if (members != null) {
+                chats.put(chat, members.size());
+            }
         }
+
         return null;
     }
 }

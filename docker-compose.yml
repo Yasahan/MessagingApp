@@ -20,6 +20,7 @@ services:
     build:
       context: .
       dockerfile: ./MessagingAppBackend/Dockerfile
+    command: /app/mvnw spring-boot:run
     container_name: "backend"
     restart: unless-stopped
     working_dir: /app

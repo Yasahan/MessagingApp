@@ -23,24 +23,6 @@ export class NewHobbyComponent implements OnInit {
     if(SessionService.getCurrentUser() === undefined) {
       this.router.navigate(['/login']);
     }
-
-    // let hobby1: Hobby = new Hobby();
-    // hobby1.hobbyName = "Football";
-    //
-    // let hobby2: Hobby = new Hobby();
-    // hobby2.hobbyName = "Basketball";
-    //
-    // let hobby3: Hobby = new Hobby();
-    // hobby3.hobbyName = "Golf";
-    //
-    // let hobby4: Hobby = new Hobby();
-    // hobby4.hobbyName = "Tennis";
-    //
-    // let hobby5: Hobby = new Hobby();
-    // hobby5.hobbyName = "Archery";
-    //
-    // this.hobbies.push(hobby1, hobby2, hobby3, hobby4, hobby5);
-
     this.hobbyService.getHobbies().subscribe(hobbies=>{
       this.hobbies = hobbies;
     })
@@ -63,7 +45,8 @@ export class NewHobbyComponent implements OnInit {
     for(let hobby in this.hobbiesToAdd) {
       this.choosesService.addChoice(this.hobbiesToAdd[hobby]).subscribe(hobby => {
 
-      });;
+      });
     }
+    /*this.router.navigate(['/chatMenu']);*/
   }
 }

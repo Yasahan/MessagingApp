@@ -1,9 +1,9 @@
 <div class="d-flex justify-content-center">
 <p style="color: cadetblue; font-size: xx-large">{{ chat.chatName }}</p>
 <!--  <div class="btn btn-primary" [routerLink]="['inviteFriends/', chat]" >Send invite</div>-->
-  <button type="button" class="btn btn-success" style="alignment: left" (click)="routeInviteFriends(chat);">Send invite</button>
 </div>
 
+<button type="button" class="btn btn-success" style="alignment: left" (click)="routeInviteFriends(chat);">Send invite</button>
 
 <ul *ngFor="let message of messages" class="list-group">
   <li class="list-group-item">

@@ -146,8 +146,10 @@ public class MongoChatController {
 
     @CrossOrigin
     @RequestMapping("/getChatUsingNameAndCreatorId")
-    ChatDTO getChatUsingNameAndCreatorId(@RequestParam String chatName, @RequestParam String creatorId) {
+    ChatDTO getChatUsingNameAndCreatorId(@RequestParam String chatName, @RequestParam String creatorId) throws InterruptedException {
         FindIterable<Document> iterDoc = chatCollection.find();
+        // wait for 2 seconds so that new created chat can be saved async to the database
+        Thread.sleep(2000);
         for (Document document : iterDoc) {
             if (document.getInteger("creator_id").toString().equals(creatorId) && document.getString("chat_name").equals(chatName)) {
                 return new ChatDTO(document.getLong("chat_id").toString(), document.getString("chat_description"), document.getString("chat_name"), document.getInteger("creator_id").toString());

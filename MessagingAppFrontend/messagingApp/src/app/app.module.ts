@@ -49,19 +49,19 @@ import { PopulateDbComponent } from './component/populate-db/populate-db.compone
     FormsModule,
     HttpClientModule,
     RouterModule.forRoot([
+      {path: '', component: MainManuComponent},
       {path: 'register', component: RegisterFormComponent},
       {path: 'adminValidation', component: AdminValidationComponent},
       {path: 'chatMenu/:chat', component: ChatRoomComponent},
       {path: 'chatMenu', component: ChatMenuComponent},
       {path: 'createChatRoom', component: NewChatRoomComponent},
       {path: 'chooseHobby', component: NewHobbyComponent},
-      {path: 'login', component: LoginPageComponent},
       {path: 'addFriend', component: AddFriendComponent},
       {path: 'inviteFriends/:chatId', component: InviteFriendsComponent},
       {path: 'firstReport', component: FirstReportComponent},
       {path: 'secondReport', component: SecondReportComponent},
       {path: 'populateDB', component: PopulateDbComponent},
-      {path: '**', component: MainManuComponent}
+      {path: 'login', component: LoginPageComponent}
     ])
   ],
   providers: [],

@@ -8,4 +8,3 @@ COPY ./MessagingAppBackend /app
 
 RUN chmod +x /app/mvnw
 
-CMD /app/mvnw spring-boot:run
