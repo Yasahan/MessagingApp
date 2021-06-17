@@ -135,6 +135,18 @@ public class DBPopulate {
                     System.err.println("Error while executing INSERT INTO Message statement: " + e.getMessage());
                 }
             }
+            for(int j = 0; j < 3; j++) {
+                int hobbyId = (int) (Math.random() * (hobbies.size()));
+                try {
+                    DatabaseConnection.getInstance().createStatement().executeUpdate(String.format("INSERT INTO chooses(hobby_id, user_id) VALUES(%s, %s)", hobbyId, 3));
+                    if (j == 2) {
+                        hobbyId = (int) (Math.random() * (hobbies.size()));
+                    }
+                    DatabaseConnection.getInstance().createStatement().executeUpdate(String.format("INSERT INTO chooses(hobby_id, user_id) VALUES(%s, %s)", hobbyId, 2));
+                } catch (Exception e) {
+                    j--;
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
