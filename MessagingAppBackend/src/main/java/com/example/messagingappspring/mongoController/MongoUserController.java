@@ -133,7 +133,7 @@ public class MongoUserController {
     }
 
     boolean isAlreadyFriend(String userId, String friendId) {
-        return userCollection.find(Filters.and(Filters.eq("user_id", Integer.parseInt(userId)), Filters.in("friends", Integer.parseInt(friendId)))).first() == null;
+        return userCollection.find(Filters.and(Filters.eq("user_id", Integer.parseInt(userId)), Filters.in("friends", Integer.parseInt(friendId)))).first() != null;
     }
 
 
