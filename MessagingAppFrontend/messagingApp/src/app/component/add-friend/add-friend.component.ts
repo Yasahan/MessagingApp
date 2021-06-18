@@ -18,6 +18,7 @@ export class AddFriendComponent implements OnInit {
     this.userService.getViaName(result.username).then(userFound=>{
       if(userFound != null) {
         this.friendService.addFriend(userFound.userId).subscribe();
+        alert("Friend added successfully!")
         this.router.navigate(['chatMenu/']);
       }
       else {

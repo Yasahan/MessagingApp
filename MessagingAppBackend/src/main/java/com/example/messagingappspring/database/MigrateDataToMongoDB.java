@@ -21,7 +21,7 @@ import java.util.List;
 public class MigrateDataToMongoDB {
 
     DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
-    MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+    MongoClient mongoClient = MongoClients.create("mongodb://root:sadfs$.df3fg@mongo:27017");
     MongoDatabase database = mongoClient.getDatabase("messagingappdb");
     MongoCollection<Document> userCollection = database.getCollection("user_info");
     MongoCollection<Document> hobbiesCollection = database.getCollection("hobbies");
@@ -37,6 +37,14 @@ public class MigrateDataToMongoDB {
         addchats();
         addChatMembers();
         addMessages();
+    }
+
+    @CrossOrigin
+    @RequestMapping("/dropMongo")
+    void dropMongoTables() {
+        chatCollection.drop();
+        userCollection.drop();
+        hobbiesCollection.drop();
     }
 
 
