@@ -37,6 +37,7 @@ public class MigrateDataToMongoDB {
         addchats();
         addChatMembers();
         addMessages();
+        addInvites();
     }
 
     @CrossOrigin
@@ -173,9 +174,6 @@ public class MigrateDataToMongoDB {
             chatCollection.insertOne(doc);
             chatCollection.updateOne(doc, Updates.push("users", Integer.parseInt(chat.getCreatorId())));
             Document userById = MongoUtil.findUserById(chat.getCreatorId());
-            if (userById != null) {
-                userCollection.updateOne(userById, Updates.push("chats", (int) chatId));
-            }
         }
     }
 
@@ -195,6 +193,7 @@ public class MigrateDataToMongoDB {
                 ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from is_member where chat_id =" + chat.getChatId());
                 while (resultSet.next()) {
                     chatCollection.updateOne(MongoUtil.findChat("chat_id", chat.getChatId()), Updates.push("users", resultSet.getInt(2)));
+                    userCollection.updateOne(MongoUtil.findUserById(String.valueOf(resultSet.getInt(2))), Updates.push("chats", Integer.parseInt(chat.getChatId())));
                 }
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
@@ -215,6 +214,19 @@ public class MigrateDataToMongoDB {
                 if (chatById != null) {
                     chatCollection.updateOne(chatById, Updates.push("messages", doc));
                 }
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+
+    void addInvites() {
+        try {
+            ResultSet resultSet = databaseConnection.createStatement().executeQuery("select * from invites");
+            while (resultSet.next()) {
+                Document user = MongoUtil.findUserById(String.valueOf(resultSet.getInt(3)));
+                userCollection.updateOne(user, Updates.push("chats", resultSet.getInt(1)));
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
