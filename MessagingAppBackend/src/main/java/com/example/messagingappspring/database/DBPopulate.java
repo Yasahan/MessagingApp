@@ -32,7 +32,7 @@ public class DBPopulate {
             int emailsRead = 0;
             int descriptionsRead = 0;
             int hobbyNr = 1;
-            for (int i = 0; i < users.size(); ++i) {
+            for (int i = 0; i < (users.size()/5); ++i) {
                 String nickname = users.get(i)[0]; // current user nickname
                 String pwd = users.get(i)[1]; // user password
                 String birthdate = users.get(i)[2];
@@ -94,7 +94,7 @@ public class DBPopulate {
             }
 
             boolean first = true;
-            for(int i = users.size() - 1, j = 1; i >= users.size() - 90; --i, ++j) { // additional 200 Sessions
+            for(int i = (users.size()/5) - 1, j = 1; i >= (users.size()/5) - 90; --i, ++j) { // additional 200 Sessions
                 String insertSession = null;
                 if(first) {
                     insertSession = String.format("INSERT INTO is_member(chat_id, member_id) VALUES(1, %s)", i);
@@ -116,7 +116,7 @@ public class DBPopulate {
 
             first = true;
             int counter = 0;
-            for(int i = users.size() - 1; i >= users.size() - 90; --i) {
+            for(int i = (users.size()/5) - 1; i >= (users.size()/5) - 90; --i) {
                 String insertMessage = null;
                 if(first) {
                     insertMessage = String.format("INSERT INTO message(chat_id, content, sender_id) VALUES(1, '%s', %s)", descriptions.get(counter++)[0], i);
